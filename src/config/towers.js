@@ -27,7 +27,7 @@ export const TOWER_TYPES = {
     },
     ICE: {
         name: 'Ice Tower',
-        emoji: '🏰',
+        emoji: '❄️',
         cost: 200,
         range: 90,
         damage: 15,

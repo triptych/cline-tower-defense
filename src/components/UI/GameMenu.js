@@ -74,12 +74,16 @@ export class GameMenu {
             p5.height - cellSize
         );
 
-        // Tower buttons
-        const towers = [
-            { type: 'BASIC', emoji: '🗼', cost: 100 },
-            { type: 'FIRE', emoji: '🏰', cost: 200 },
-            { type: 'ICE', emoji: '🏰', cost: 200 }
-        ];
+        // Get tower configs from gameState
+        const towerTypes = ['BASIC', 'FIRE', 'ICE'];
+        const towers = towerTypes.map(type => {
+            const config = this.gameState.getTowerConfig(type);
+            return {
+                type,
+                emoji: config.emoji,
+                cost: config.cost
+            };
+        });
 
         towers.forEach((tower, index) => {
             const x = p5.width - menuWidth + padding;
