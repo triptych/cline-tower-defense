@@ -21,6 +21,7 @@ class Game {
         this.lastUpdateTime = 0;
         this.paused = false;
         this.selectedTower = null;
+        this.projectiles = new Set(); // Track active projectiles
     }
 
     init(p5) {
@@ -40,6 +41,18 @@ class Game {
             this.level.gridSize.width * this.cellSize,
             this.level.gridSize.height * this.cellSize
         );
+
+        // Listen for tower attacks to create projectiles
+        this.on('towerAttack', ({ from, to, tower }) => {
+            const projectile = {
+                from: { x: from.x * this.cellSize + this.cellSize / 2, y: from.y * this.cellSize + this.cellSize / 2 },
+                to: { x: to.x * this.cellSize + this.cellSize / 2, y: to.y * this.cellSize + this.cellSize / 2 },
+                progress: 0,
+                speed: 2, // Projectile speed in grid cells per second
+                tower
+            };
+            this.projectiles.add(projectile);
+        });
     }
 
     loadLevel(levelIndex) {
@@ -64,6 +77,14 @@ class Game {
         for (const tower of this.towers) {
             tower.update(deltaTime);
         }
+
+        // Update projectiles
+        for (const projectile of this.projectiles) {
+            projectile.progress += projectile.speed * deltaTime;
+            if (projectile.progress >= 1) {
+                this.projectiles.delete(projectile);
+            }
+        }
     }
 
     draw() {
@@ -85,9 +106,61 @@ class Game {
             creep.draw(p5, this.cellSize);
         }
 
+        // Draw projectiles
+        this.drawProjectiles();
+
         // Draw UI
         this.gameMenu.draw(p5, this.cellSize);
         this.upgradeMenu.draw(p5, this.cellSize);
+    }
+
+    drawProjectiles() {
+        const p5 = this.p5;
+
+        for (const projectile of this.projectiles) {
+            const x = p5.lerp(projectile.from.x, projectile.to.x, projectile.progress);
+            const y = p5.lerp(projectile.from.y, projectile.to.y, projectile.progress);
+
+            // Draw projectile based on tower type
+            p5.push();
+            if (projectile.tower instanceof FireTower) {
+                p5.fill(255, 100, 0);
+                p5.noStroke();
+                p5.circle(x, y, 8);
+
+                // Add flame trail effect
+                for (let i = 0; i < 3; i++) {
+                    const trailProgress = projectile.progress - (i * 0.1);
+                    if (trailProgress > 0) {
+                        const trailX = p5.lerp(projectile.from.x, projectile.to.x, trailProgress);
+                        const trailY = p5.lerp(projectile.from.y, projectile.to.y, trailProgress);
+                        p5.fill(255, 100, 0, 100 - (i * 30));
+                        p5.circle(trailX, trailY, 6 - (i * 2));
+                    }
+                }
+            } else if (projectile.tower instanceof IceTower) {
+                p5.fill(100, 200, 255);
+                p5.noStroke();
+                p5.circle(x, y, 8);
+
+                // Add ice trail effect
+                for (let i = 0; i < 3; i++) {
+                    const trailProgress = projectile.progress - (i * 0.1);
+                    if (trailProgress > 0) {
+                        const trailX = p5.lerp(projectile.from.x, projectile.to.x, trailProgress);
+                        const trailY = p5.lerp(projectile.from.y, projectile.to.y, trailProgress);
+                        p5.fill(100, 200, 255, 100 - (i * 30));
+                        p5.circle(trailX, trailY, 6 - (i * 2));
+                    }
+                }
+            } else {
+                // Default projectile
+                p5.fill(255);
+                p5.noStroke();
+                p5.circle(x, y, 6);
+            }
+            p5.pop();
+        }
     }
 
     drawGrid() {

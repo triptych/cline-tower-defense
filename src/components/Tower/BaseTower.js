@@ -13,7 +13,7 @@ export class BaseTower {
 
         // Tower properties
         this.level = 0;
-        this.range = config.range;
+        this.range = config.range / GRID_CELL_SIZE; // Convert range from pixels to grid units
         this.damage = config.damage;
         this.fireRate = config.fireRate;
         this.emoji = config.emoji;
@@ -35,7 +35,9 @@ export class BaseTower {
 
         // Apply upgrade effects
         Object.entries(upgrade).forEach(([key, value]) => {
-            if (key !== 'cost' && key !== 'description') {
+            if (key === 'range') {
+                this.range = value / GRID_CELL_SIZE; // Convert range from pixels to grid units
+            } else if (key !== 'cost' && key !== 'description') {
                 this[key] = value;
             }
         });
@@ -98,17 +100,10 @@ export class BaseTower {
     }
 
     getDistanceTo(target) {
-        // Convert tower grid position to pixel coordinates
-        const towerPixelX = (this.x + 0.5) * GRID_CELL_SIZE;
-        const towerPixelY = (this.y + 0.5) * GRID_CELL_SIZE;
-
-        // Creep coordinates are already in grid units, just need to convert to pixels
-        const targetPixelX = target.x * GRID_CELL_SIZE;
-        const targetPixelY = target.y * GRID_CELL_SIZE;
-
-        // Calculate distance in pixels
-        const dx = targetPixelX - towerPixelX;
-        const dy = targetPixelY - towerPixelY;
+        // Both tower and creep positions are in grid units
+        // Calculate distance in grid units
+        const dx = target.x - this.x;
+        const dy = target.y - this.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
 
@@ -125,7 +120,7 @@ export class BaseTower {
             type: this.type,
             level: this.level,
             damage: this.damage,
-            range: this.range,
+            range: this.range * GRID_CELL_SIZE, // Convert back to pixels for display
             fireRate: this.fireRate,
             totalDamageDealt: this.totalDamageDealt,
             kills: this.kills
@@ -144,7 +139,7 @@ export class BaseTower {
             p5.circle(
                 this.x * cellSize + cellSize / 2,
                 this.y * cellSize + cellSize / 2,
-                this.range * 2
+                this.range * cellSize * 2 // Convert grid units to pixels for display
             );
         }
 
