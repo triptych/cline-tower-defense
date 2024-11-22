@@ -36,11 +36,11 @@ class Game {
 
         this.lives = this.level.startingLives;
 
-        // Set up canvas
-        p5.createCanvas(
-            this.level.gridSize.width * this.cellSize,
-            this.level.gridSize.height * this.cellSize
-        );
+        // Set up canvas with additional width for UI
+        const gameWidth = this.level.gridSize.width * this.cellSize;
+        const gameHeight = this.level.gridSize.height * this.cellSize;
+        const uiWidth = 8 * this.cellSize; // 8 cells for UI
+        p5.createCanvas(gameWidth + uiWidth, gameHeight);
 
         // Listen for tower attacks to create projectiles
         this.on('towerAttack', ({ from, to, tower }) => {

@@ -10,28 +10,39 @@ export class GameMenu {
 
     draw(p5, cellSize) {
         this.p5 = p5; // Store p5 instance
-        this.drawTopBar(p5, cellSize);
-        this.drawTowerMenu(p5, cellSize);
+        const gameWidth = cellSize * 12; // Assuming 12x12 game grid
+
+        // Draw game area border
+        p5.stroke(34, 73, 94);
+        p5.strokeWeight(2);
+        p5.noFill();
+        p5.rect(0, 0, gameWidth, gameWidth);
+        p5.strokeWeight(1);
+
+        this.drawTopBar(p5, cellSize, gameWidth);
+        this.drawTowerMenu(p5, cellSize, gameWidth);
 
         if (this.selectedTower) {
-            this.drawTowerInfo(p5, cellSize);
+            this.drawTowerInfo(p5, cellSize, gameWidth);
         }
 
         if (this.isPlacingTower) {
             this.drawTowerPlacement(p5, cellSize);
         }
 
-        this.drawWaveInfo(p5, cellSize);
+        this.drawWaveInfo(p5, cellSize, gameWidth);
     }
 
-    drawTopBar(p5, cellSize) {
+    drawTopBar(p5, cellSize, gameWidth) {
         const padding = 10;
         const height = cellSize;
+        const barWidth = cellSize * 8;
+        const x = gameWidth + padding;
 
         // Background
         p5.fill(0, 0, 0, 200);
         p5.noStroke();
-        p5.rect(0, 0, p5.width, height);
+        p5.rect(x, 0, barWidth, height * 2);
 
         // Lives
         p5.textAlign(p5.LEFT, p5.CENTER);
@@ -39,40 +50,37 @@ export class GameMenu {
         p5.fill(255);
         p5.text(
             `❤️ ${this.gameState.getLives()}`,
-            padding,
+            x + padding,
             height / 2
         );
 
         // Currency
         p5.text(
             `💰 ${this.gameState.getCurrency()}`,
-            padding + cellSize * 3,
-            height / 2
+            x + padding,
+            height * 1.5
         );
 
         // Wave
         p5.textAlign(p5.RIGHT, p5.CENTER);
         p5.text(
             `Wave ${this.gameState.getCurrentWave()}`,
-            p5.width - padding,
+            x + barWidth - padding,
             height / 2
         );
     }
 
-    drawTowerMenu(p5, cellSize) {
-        const menuWidth = cellSize * 3;
+    drawTowerMenu(p5, cellSize, gameWidth) {
+        const menuWidth = cellSize * 8;
         const padding = 10;
         const buttonSize = cellSize * 0.8;
+        const x = gameWidth + padding;
+        const startY = cellSize * 2.5;
 
         // Background
         p5.fill(0, 0, 0, 200);
         p5.noStroke();
-        p5.rect(
-            p5.width - menuWidth,
-            cellSize,
-            menuWidth,
-            p5.height - cellSize
-        );
+        p5.rect(x, startY, menuWidth, cellSize * 4);
 
         // Get tower configs from gameState
         const towerTypes = ['BASIC', 'FIRE', 'ICE'];
@@ -86,37 +94,37 @@ export class GameMenu {
         });
 
         towers.forEach((tower, index) => {
-            const x = p5.width - menuWidth + padding;
-            const y = cellSize * 1.5 + index * (buttonSize + padding);
+            const buttonX = x + padding;
+            const y = startY + padding + index * (buttonSize + padding);
 
             // Button background
             const canAfford = this.gameState.canAffordTower(tower.type);
             p5.fill(canAfford ? 50 : 30);
-            p5.rect(x, y, menuWidth - padding * 2, buttonSize);
+            p5.rect(buttonX, y, menuWidth - padding * 2, buttonSize);
 
             // Tower icon
             p5.textAlign(p5.LEFT, p5.CENTER);
             p5.textSize(buttonSize * 0.6);
             p5.fill(255);
-            p5.text(tower.emoji, x + padding, y + buttonSize / 2);
+            p5.text(tower.emoji, buttonX + padding, y + buttonSize / 2);
 
             // Cost
             p5.textAlign(p5.RIGHT, p5.CENTER);
             p5.textSize(buttonSize * 0.4);
             p5.text(
                 `💰 ${tower.cost}`,
-                x + menuWidth - padding * 3,
+                buttonX + menuWidth - padding * 3,
                 y + buttonSize / 2
             );
         });
     }
 
-    drawTowerInfo(p5, cellSize) {
+    drawTowerInfo(p5, cellSize, gameWidth) {
         const padding = 10;
-        const infoWidth = cellSize * 4;
+        const infoWidth = cellSize * 8;
         const infoHeight = cellSize * 5;
-        const x = p5.width - infoWidth - cellSize * 3;
-        const y = cellSize;
+        const x = gameWidth + padding;
+        const y = cellSize * 7;
 
         // Background
         p5.fill(0, 0, 0, 200);
@@ -215,15 +223,15 @@ export class GameMenu {
         }
     }
 
-    drawWaveInfo(p5, cellSize) {
-        if (!this.gameState.isWaveInProgress()) {
-            const padding = 20;
-            const buttonWidth = cellSize * 4;
-            const buttonHeight = cellSize;
-            const x = (p5.width - buttonWidth) / 2;
-            const y = p5.height - buttonHeight - padding;
+    drawWaveInfo(p5, cellSize, gameWidth) {
+        const padding = 10;
+        const x = gameWidth + padding;
+        const buttonWidth = cellSize * 8;
+        const buttonHeight = cellSize;
 
+        if (!this.gameState.isWaveInProgress()) {
             // Next wave button
+            const y = p5.height - buttonHeight - padding;
             p5.fill(0, 100, 0);
             p5.rect(x, y, buttonWidth, buttonHeight);
 
@@ -237,14 +245,13 @@ export class GameMenu {
             );
         } else {
             // Wave progress
-            const remaining = this.gameState.getRemainingCreeps();
-            p5.textAlign(p5.CENTER, p5.TOP);
+            p5.textAlign(p5.LEFT, p5.CENTER);
             p5.textSize(cellSize * 0.4);
             p5.fill(255);
             p5.text(
-                `Remaining Creeps: ${remaining}`,
-                p5.width / 2,
-                cellSize * 1.2
+                `Remaining Creeps: ${this.gameState.getRemainingCreeps()}`,
+                x,
+                cellSize * 2
             );
         }
     }
@@ -253,10 +260,12 @@ export class GameMenu {
         if (!this.p5) return false;
 
         const cellSize = this.gameState.getCellSize();
+        const gameWidth = cellSize * 12;
+        const menuX = gameWidth + 10;
 
         // Check tower menu clicks
-        if (x > this.p5.width - cellSize * 3) {
-            const menuY = Math.floor((y - cellSize * 1.5) / cellSize);
+        if (x > menuX && x < menuX + cellSize * 8) {
+            const menuY = Math.floor((y - cellSize * 2.5) / cellSize);
             if (menuY >= 0 && menuY < 3) {
                 const towerTypes = ['BASIC', 'FIRE', 'ICE'];
                 this.startTowerPlacement(towerTypes[menuY]);
@@ -278,20 +287,20 @@ export class GameMenu {
         // Handle tower selection
         const gridX = Math.floor(x / cellSize);
         const gridY = Math.floor(y / cellSize);
-        const tower = this.gameState.getTowerAt(gridX, gridY);
-
-        if (tower) {
-            this.selectedTower = tower;
-            return true;
+        if (gridX < 12 && gridY < 12) { // Only select towers within game area
+            const tower = this.gameState.getTowerAt(gridX, gridY);
+            if (tower) {
+                this.selectedTower = tower;
+                return true;
+            }
         }
 
         // Handle wave start button
         if (!this.gameState.isWaveInProgress()) {
-            const buttonWidth = cellSize * 4;
-            const buttonX = (this.p5.width - buttonWidth) / 2;
-            const buttonY = this.p5.height - cellSize - 20;
+            const buttonX = menuX;
+            const buttonY = this.p5.height - cellSize - 10;
 
-            if (x >= buttonX && x <= buttonX + buttonWidth &&
+            if (x >= buttonX && x <= buttonX + cellSize * 8 &&
                 y >= buttonY && y <= buttonY + cellSize) {
                 this.gameState.startNextWave();
                 return true;
@@ -306,10 +315,15 @@ export class GameMenu {
         if (!this.p5) return;
 
         const cellSize = this.gameState.getCellSize();
-        this.hoveredCell = {
-            x: Math.floor(x / cellSize),
-            y: Math.floor(y / cellSize)
-        };
+        const gridX = Math.floor(x / cellSize);
+        const gridY = Math.floor(y / cellSize);
+
+        // Only allow tower placement within game area
+        if (gridX < 12 && gridY < 12) {
+            this.hoveredCell = { x: gridX, y: gridY };
+        } else {
+            this.hoveredCell = null;
+        }
     }
 
     startTowerPlacement(type) {
