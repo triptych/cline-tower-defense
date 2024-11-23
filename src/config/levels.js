@@ -12,7 +12,7 @@ export const LEVELS = [
     {
         id: 1,
         name: "Beginner's Path",
-        startingCurrency: 300,
+        startingCurrency: 500,
         startingLives: 100,
         gridSize: { width: 12, height: 8 },
         waves: 3,
@@ -67,7 +67,7 @@ export const LEVELS = [
     {
         id: 2,
         name: "Winding Road",
-        startingCurrency: 400,
+        startingCurrency: 500,
         startingLives: 100,
         gridSize: { width: 12, height: 8 },
         waves: 4,

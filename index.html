@@ -13,13 +13,104 @@
             align-items: center;
             min-height: 100vh;
             background: #2c3e50;
+            font-family: Arial, sans-serif;
         }
         canvas {
             border: 2px solid #34495e;
         }
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .splash-content {
+            background: #34495e;
+            padding: 2rem;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            max-width: 600px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .info-section {
+            margin: 1rem 0;
+            text-align: left;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+        }
+        .animation-container {
+            font-size: 2rem;
+            margin: 2rem 0;
+            height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+        .tower-defense-scene {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            animation: defend 3s infinite;
+        }
+        @keyframes defend {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(-20px); }
+            100% { transform: translateX(0); }
+        }
+        .start-button {
+            background: #27ae60;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .start-button:hover {
+            background: #219a52;
+        }
     </style>
 </head>
 <body>
+    <div id="splash-screen">
+        <div class="splash-content">
+            <h1>Welcome to Tower Defense!</h1>
+            <div class="animation-container">
+                <div class="tower-defense-scene">
+                    <div class="tower">🏰</div>
+                    <div class="projectile">⚡</div>
+                    <div class="enemy">👾</div>
+                </div>
+            </div>
+            <div class="info-section">
+                <h3>How to Play:</h3>
+                <ul>
+                    <li>Place towers strategically to defend your path</li>
+                    <li>Different towers have unique abilities:
+                        <ul>
+                            <li>🔥 Fire Tower - High damage</li>
+                            <li>❄️ Ice Tower - Slows enemies</li>
+                        </ul>
+                    </li>
+                    <li>Earn money by defeating enemies</li>
+                    <li>Upgrade towers to increase their power</li>
+                    <li>Survive increasingly difficult waves</li>
+                </ul>
+            </div>
+            <button class="start-button" onclick="document.getElementById('splash-screen').style.display='none'">
+                Start Game
+            </button>
+        </div>
+    </div>
     <script type="module" src="src/game.js"></script>
 </body>
 </html>

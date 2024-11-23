@@ -90,11 +90,32 @@ class Game {
     draw() {
         const p5 = this.p5;
 
-        // Clear background
+        // Layer 1: Game Background
         p5.background(50);
-
-        // Draw grid
         this.drawGrid();
+
+        // Layer 2: Game Elements
+        this.drawGameElements();
+
+        // Layer 3: Standard UI
+        this.gameMenu.draw(p5, this.cellSize);
+
+        // Layer 4: Tooltip Layer
+        if (this.upgradeMenu.isVisible()) {
+            // Draw a semi-transparent overlay to dim the game
+            p5.push();
+            p5.fill(0, 0, 0, 180); // Increased opacity for better contrast
+            p5.noStroke();
+            p5.rect(0, 0, p5.width, p5.height);
+            p5.pop();
+
+            // Draw the upgrade menu on top
+            this.upgradeMenu.draw(p5, this.cellSize);
+        }
+    }
+
+    drawGameElements() {
+        const p5 = this.p5;
 
         // Draw towers
         for (const tower of this.towers) {
@@ -108,10 +129,6 @@ class Game {
 
         // Draw projectiles
         this.drawProjectiles();
-
-        // Draw UI
-        this.gameMenu.draw(p5, this.cellSize);
-        this.upgradeMenu.draw(p5, this.cellSize);
     }
 
     drawProjectiles() {
@@ -383,11 +400,28 @@ class Game {
         // Finally check tower selection
         const gridX = Math.floor(mouseX / this.cellSize);
         const gridY = Math.floor(mouseY / this.cellSize);
-        const tower = this.getTowerAt(gridX, gridY);
-
-        if (tower) {
-            this.upgradeMenu.show(tower, mouseX, mouseY);
+        if (gridX < 12 && gridY < 12) { // Only select towers within game area
+            const tower = this.getTowerAt(gridX, gridY);
+            if (tower) {
+                this.upgradeMenu.show(tower, mouseX, mouseY);
+                return true;
+            }
         }
+
+        // Handle wave start button
+        if (!this.isWaveInProgress()) {
+            const buttonX = this.level.gridSize.width * this.cellSize + 10;
+            const buttonY = this.p5.height - this.cellSize - 10;
+
+            if (mouseX >= buttonX && mouseX <= buttonX + this.cellSize * 8 &&
+                mouseY >= buttonY && mouseY <= buttonY + this.cellSize) {
+                this.startNextWave();
+                return true;
+            }
+        }
+
+        this.selectedTower = null;
+        return false;
     }
 
     handleMouseMove(event) {

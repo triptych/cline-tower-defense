@@ -6,6 +6,8 @@ export class GameMenu {
         this.isPlacingTower = false;
         this.towerType = null;
         this.p5 = null; // Will be set in draw
+        this.hoveredButton = null;
+        this.activeButton = null;
     }
 
     draw(p5, cellSize) {
@@ -34,10 +36,10 @@ export class GameMenu {
     }
 
     drawTopBar(p5, cellSize, gameWidth) {
-        const padding = 10;
+        const padding = 5;
         const height = cellSize;
         const barWidth = cellSize * 8;
-        const x = gameWidth + padding;
+        const x = gameWidth;
 
         // Background
         p5.fill(0, 0, 0, 200);
@@ -72,9 +74,9 @@ export class GameMenu {
 
     drawTowerMenu(p5, cellSize, gameWidth) {
         const menuWidth = cellSize * 8;
-        const padding = 10;
+        const padding = 5;
         const buttonSize = cellSize * 0.8;
-        const x = gameWidth + padding;
+        const x = gameWidth;
         const startY = cellSize * 2.5;
 
         // Background
@@ -99,7 +101,17 @@ export class GameMenu {
 
             // Button background
             const canAfford = this.gameState.canAffordTower(tower.type);
-            p5.fill(canAfford ? 50 : 30);
+            let buttonColor = canAfford ? 50 : 30;
+
+            // Hover and active states
+            if (this.hoveredButton === index) {
+                buttonColor += 20;
+            }
+            if (this.activeButton === index) {
+                buttonColor += 30;
+            }
+
+            p5.fill(buttonColor);
             p5.rect(buttonX, y, menuWidth - padding * 2, buttonSize);
 
             // Tower icon
@@ -120,10 +132,10 @@ export class GameMenu {
     }
 
     drawTowerInfo(p5, cellSize, gameWidth) {
-        const padding = 10;
+        const padding = 5;
         const infoWidth = cellSize * 8;
         const infoHeight = cellSize * 5;
-        const x = gameWidth + padding;
+        const x = gameWidth;
         const y = cellSize * 7;
 
         // Background
@@ -224,8 +236,8 @@ export class GameMenu {
     }
 
     drawWaveInfo(p5, cellSize, gameWidth) {
-        const padding = 10;
-        const x = gameWidth + padding;
+        const padding = 5;
+        const x = gameWidth;
         const buttonWidth = cellSize * 8;
         const buttonHeight = cellSize;
 
@@ -261,12 +273,14 @@ export class GameMenu {
 
         const cellSize = this.gameState.getCellSize();
         const gameWidth = cellSize * 12;
-        const menuX = gameWidth + 10;
+        const menuX = gameWidth;
+        const padding = 5;
 
         // Check tower menu clicks
         if (x > menuX && x < menuX + cellSize * 8) {
             const menuY = Math.floor((y - cellSize * 2.5) / cellSize);
             if (menuY >= 0 && menuY < 3) {
+                this.activeButton = menuY;
                 const towerTypes = ['BASIC', 'FIRE', 'ICE'];
                 this.startTowerPlacement(towerTypes[menuY]);
                 return true;
@@ -281,6 +295,9 @@ export class GameMenu {
                 this.hoveredCell.y
             );
             this.isPlacingTower = !success;
+            if (success) {
+                this.activeButton = null;
+            }
             return true;
         }
 
@@ -298,7 +315,7 @@ export class GameMenu {
         // Handle wave start button
         if (!this.gameState.isWaveInProgress()) {
             const buttonX = menuX;
-            const buttonY = this.p5.height - cellSize - 10;
+            const buttonY = this.p5.height - cellSize - padding;
 
             if (x >= buttonX && x <= buttonX + cellSize * 8 &&
                 y >= buttonY && y <= buttonY + cellSize) {
@@ -308,6 +325,7 @@ export class GameMenu {
         }
 
         this.selectedTower = null;
+        this.activeButton = null;
         return false;
     }
 
@@ -315,10 +333,24 @@ export class GameMenu {
         if (!this.p5) return;
 
         const cellSize = this.gameState.getCellSize();
-        const gridX = Math.floor(x / cellSize);
-        const gridY = Math.floor(y / cellSize);
+        const gameWidth = cellSize * 12;
+        const menuX = gameWidth;
+
+        // Check tower menu hover
+        if (x > menuX && x < menuX + cellSize * 8) {
+            const menuY = Math.floor((y - cellSize * 2.5) / cellSize);
+            if (menuY >= 0 && menuY < 3) {
+                this.hoveredButton = menuY;
+            } else {
+                this.hoveredButton = null;
+            }
+        } else {
+            this.hoveredButton = null;
+        }
 
         // Only allow tower placement within game area
+        const gridX = Math.floor(x / cellSize);
+        const gridY = Math.floor(y / cellSize);
         if (gridX < 12 && gridY < 12) {
             this.hoveredCell = { x: gridX, y: gridY };
         } else {
@@ -337,5 +369,6 @@ export class GameMenu {
     cancelTowerPlacement() {
         this.isPlacingTower = false;
         this.towerType = null;
+        this.activeButton = null;
     }
 }

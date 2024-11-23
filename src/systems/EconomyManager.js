@@ -1,7 +1,7 @@
 import { TOWER_TYPES } from '../config/towers.js';
 
 export class EconomyManager {
-    constructor(startingCurrency = 300) {
+    constructor(startingCurrency = 500) {
         this.currency = startingCurrency;
         this.subscribers = new Set();
     }
@@ -97,7 +97,7 @@ export class EconomyManager {
     }
 
     // Reset economy to starting amount
-    reset(startingCurrency = 300) {
+    reset(startingCurrency = 500) {
         this.currency = startingCurrency;
         this.notify();
     }

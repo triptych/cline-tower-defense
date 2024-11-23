@@ -35,9 +35,15 @@ export class UpgradeMenu {
             y = p5.height - menuHeight;
         }
 
-        // Draw menu background
-        p5.fill(0, 0, 0, 230);
-        p5.stroke(255, 255, 255, 50);
+        // Save current drawing state
+        p5.push();
+
+        // Move tooltip to top layer
+        p5.translate(0, 0, 1);
+
+        // Draw menu background with higher opacity for better visibility
+        p5.fill(0, 0, 0, 250);
+        p5.stroke(255, 255, 255, 100);
         p5.rect(x, y, menuWidth, menuHeight);
 
         // Draw tower info
@@ -48,6 +54,9 @@ export class UpgradeMenu {
 
         // Draw sell button
         this.drawSellButton(p5, x, y, menuWidth, menuHeight, padding, cellSize);
+
+        // Restore drawing state
+        p5.pop();
     }
 
     drawTowerInfo(p5, x, y, menuWidth, padding, cellSize) {
